@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\SensorData;
 use App\Http\Requests\StoreSensorDataPost;
 use Carbon\Carbon;
+use Log;
 
 class SensorDataController extends Controller
 {
@@ -37,6 +38,8 @@ class SensorDataController extends Controller
 
             return $input;
         });
+
+        Log::debug($validated->toArray());
 
         SensorData::insert($validated->toArray());
 
