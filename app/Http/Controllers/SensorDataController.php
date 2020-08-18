@@ -47,9 +47,6 @@ class SensorDataController extends Controller
 
         $data = $validated->filter()->toArray();
 
-        Log::debug($data);
-        Log::debug($validated);
-        
         try {
             SensorData::insert($data);
         } catch (\Throwable $th) {
