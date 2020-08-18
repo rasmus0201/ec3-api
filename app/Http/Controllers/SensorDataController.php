@@ -20,11 +20,17 @@ class SensorDataController extends Controller
     {
         $validated = collect($request->validated()['data']);
 
-        $validated = $validated->map(function($input) {
+        $now = Carbon::now();
+
+        $validated = $validated->map(function($input) use ($now) {
             $ts = $input['timestamp'];
             $time = Carbon::now();
             $time->setTimestamp(substr($ts, 0, 10));
             $time->setMicroseconds(substr($ts, -3) . "000");
+
+            if ($time > $now->addHours(48)) {
+                return [];
+            }
             
             $input['sensored_at'] = $time;
             $input['created_at'] = Carbon::now();
@@ -39,9 +45,18 @@ class SensorDataController extends Controller
             return $input;
         });
 
-        Log::debug($validated->toArray());
+        $data = $validated->filter()->toArray();
+        
+        try {
+            SensorData::insert($data);
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage());
+            Log::debug($data);
 
-        SensorData::insert($validated->toArray());
+            return response()->json([
+                'status' => false
+            ]);
+        }
 
         return response()->json([
             'status' => true
