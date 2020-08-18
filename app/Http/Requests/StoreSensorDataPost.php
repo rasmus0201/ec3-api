@@ -28,15 +28,15 @@ class StoreSensorDataPost extends FormRequest
                 'required',
                 'array'
             ],
-            'data.*.sensor' => [
+            'data.*.type' => [
                 'required',
                 'in:humidity,temperature,light,sound,vibration'
             ], 
             'data.*.value' => [
                 'required',
-                'integer'
+                'numeric'
             ],
-            'data.*.sensored_at' => [
+            'data.*.timestamp' => [
                 'required',
                 'integer'
             ],

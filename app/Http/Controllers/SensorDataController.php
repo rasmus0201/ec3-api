@@ -20,7 +20,7 @@ class SensorDataController extends Controller
         $validated = collect($request->validated()['data']);
 
         $validated = $validated->map(function($input) {
-            $ts = $input['sensored_at'];
+            $ts = $input['timestamp'];
             $time = Carbon::now();
             $time->setTimestamp(substr($ts, 0, 10));
             $time->setMicroseconds(substr($ts, -3) . "000");
@@ -29,10 +29,14 @@ class SensorDataController extends Controller
             $input['created_at'] = Carbon::now();
             $input['updated_at'] = Carbon::now();
 
+            $input['value'] = round($input['value'], 2);
+            $input['sensor'] = $input['type'];
+
+            unset($input['timestamp']);
+            unset($input['type']);
+
             return $input;
         });
-
-        // dd($validated[0]);
 
         SensorData::insert($validated->toArray());
 
