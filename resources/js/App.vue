@@ -29,7 +29,7 @@ export default {
     },
     data() {
         return {
-            delta: 24,
+            delta: 1,
             startDate: DateTime.local().startOf('day').toISO(),
             endDate: DateTime.local().endOf('day').toISO(),
             chartData: {},
