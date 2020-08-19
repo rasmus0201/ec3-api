@@ -1,17 +1,20 @@
 <template>
     <div class="container-fluid py-3">
         <div class="row">
-            <div class="col-3">
-                <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED" @close="getData"></datetime>
+            <div class="col-4">
+                <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
             </div>
-            <div class="col-3">
-                <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED" @close="getData"></datetime>
+            <div class="col-4">
+                <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
             </div>
-            <div class="col-3">
-                <input type="number" v-model="delta" placeholder="Time between datapoints" @change="getData">
+            <div class="col-2">
+                <input class="form-control" type="number" v-model="delta" placeholder="Time between datapoints" @change="getData">
+            </div>
+            <div class="col-2">
+                <button @click="getData" class="btn btn-primary">Refresh</button>
             </div>
         </div>
-        <LineGraph :chart-data="chartData" :options="chartOptions" />
+        <LineGraph class="mt-3" :chart-data="chartData" :options="chartOptions" />
     </div>
 </template>
 
@@ -27,8 +30,8 @@ export default {
     data() {
         return {
             delta: 24,
-            startDate: DateTime.local().minus({ days: 7 }).startOf('day').toISODate(),
-            endDate: DateTime.local().endOf('day').toISODate(),
+            startDate: DateTime.local().startOf('day').toISO(),
+            endDate: DateTime.local().endOf('day').toISO(),
             chartData: {},
             chartOptions: {
                 responsive: true,
@@ -110,3 +113,21 @@ export default {
     }
 };
 </script>
+
+<style lang="scss">
+    .vdatetime-input {
+        display: block;
+        width: 100%;
+        height: calc(1.5em + .75rem + 2px);
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+</style>
