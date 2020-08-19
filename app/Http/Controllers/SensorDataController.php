@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\SensorData;
 use App\Http\Requests\StoreSensorDataPost;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
+use DB;
 use Log;
 
 class SensorDataController extends Controller
@@ -59,6 +61,63 @@ class SensorDataController extends Controller
 
         return response()->json([
             'status' => true
+        ]);
+    }
+
+    public function graph(Request $request)
+    {
+        $defaultData = collect([
+            [
+                'sensor' => 'temperature',
+                'count' => 0,
+                'avg' => 0
+            ],
+            [
+                'sensor' => 'humidity',
+                'count' => 0,
+                'avg' => 0
+            ],
+            [
+                'sensor' => 'light',
+                'count' => 0,
+                'avg' => 0
+            ],
+            [
+                'sensor' => 'sound',
+                'count' => 0,
+                'avg' => 0
+            ],
+        ]);
+
+        if ($request->get('start') && $request->get('end')) {
+            $start = Carbon::createFromTimestamp($request->get('start'));
+            $end = Carbon::createFromTimestamp($request->get('end'));
+        } else {
+            $start = Carbon::now()->subDays(7)->setTime(0, 0, 0);
+            $end = Carbon::now()->setTime(23, 59, 59);
+        }
+
+        $deltaHours = $request->get('delta') ?? 24;
+        $data = [];
+        while ($start < $end) {
+            $ts = $start->timestamp;
+            $dataPoint = SensorData::select([
+                    'sensor',
+                    DB::raw('count(id) as count'),
+                    DB::raw('round(avg(value), 2) as avg')
+                ])
+                ->where('sensored_at', '>=', $start)
+                ->where('sensored_at', '<', $start->clone()->addHours($deltaHours))
+                ->groupBy('sensor')
+                ->get();
+           
+            $data[$ts] = $dataPoint->union($defaultData);
+            $start->addHours($deltaHours);
+        }
+       
+        return response()->json([
+            'status' => true,
+            'data' => $data
         ]);
     }
 }

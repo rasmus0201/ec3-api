@@ -40,5 +40,6 @@ Route::prefix('v1')->group(function () {
     });
     
     Route::get('/sensors', 'SensorDataController@index');
+    Route::get('/graph', 'SensorDataController@graph');
     Route::post('/sensors', 'SensorDataController@create');
 });
