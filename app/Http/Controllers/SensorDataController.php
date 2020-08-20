@@ -97,7 +97,14 @@ class SensorDataController extends Controller
             $end = Carbon::now()->setTime(23, 59, 59);
         }
 
-        $deltaHours = $request->get('delta') ?? 24;
+        if ($start >= $end) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
+        $delta = $request->get('delta') ?? 24;
         $data = [];
         while ($start < $end) {
             $ts = $start->timestamp;
@@ -107,12 +114,12 @@ class SensorDataController extends Controller
                     DB::raw('round(avg(value), 2) as avg')
                 ])
                 ->where('sensored_at', '>=', $start)
-                ->where('sensored_at', '<', $start->clone()->addHours($deltaHours))
+                ->where('sensored_at', '<', $start->clone()->addMinutes($delta))
                 ->groupBy('sensor')
                 ->get();
            
             $data[$ts] = $dataPoint->union($defaultData);
-            $start->addHours($deltaHours);
+            $start->addMinutes($delta);
         }
        
         return response()->json([

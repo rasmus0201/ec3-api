@@ -1,14 +1,21 @@
 <template>
     <div class="container-fluid py-3">
         <div class="row">
-            <div class="col-4">
+            <div class="col-3">
                 <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
             </div>
-            <div class="col-4">
+            <div class="col-3">
                 <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
             </div>
             <div class="col-2">
                 <input class="form-control" type="number" v-model="delta" placeholder="Time between datapoints" @change="getData">
+            </div>
+            <div class="col-2">
+                <select class="form-control" v-model="interval">
+                    <option v-for="(val, index) in intervals" :value="val.multiplier" :key="index" :selected="interval == val.multiplier">
+                        {{ val.label }}
+                    </option>
+                </select>
             </div>
             <div class="col-2">
                 <button @click="getData" class="btn btn-primary">Refresh</button>
@@ -30,6 +37,7 @@ export default {
     data() {
         return {
             delta: 1,
+            interval: 60,
             startDate: DateTime.local().startOf('day').toISO(),
             endDate: DateTime.local().endOf('day').toISO(),
             chartData: {},
@@ -37,6 +45,20 @@ export default {
                 responsive: true,
                 maintainAspectRatio: false
             },
+            intervals: [
+                {
+                    multiplier: 1,
+                    label: 'Min'
+                },
+                {
+                    multiplier: 60,
+                    label: 'Hour'
+                },
+                {
+                    multiplier: 60 * 24,
+                    label: 'Day'
+                },
+            ],
             chartColors: {
                 humidity: '#ff0000',
                 light: '#00ff00',
@@ -56,6 +78,9 @@ export default {
             let e = DateTime.fromISO(this.endDate).minus({ seconds: 1 });
 
             return 'start='+s.toSeconds()+"&end="+e.toSeconds();
+        },
+        deltaSeconds() {
+            return this.delta * this.interval;
         }
     },
     mounted() {
@@ -63,7 +88,7 @@ export default {
     },
     methods: {
         getData() {
-            fetch('api/v1/graph?delta='+this.delta+'&'+this.dateInterval)
+            fetch('api/v1/graph?delta='+this.deltaSeconds+'&'+this.dateInterval)
                 .then((res) => res.json())
                 .then((result) => {
                     const data = result.data;
