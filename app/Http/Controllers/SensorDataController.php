@@ -22,7 +22,7 @@ class SensorDataController extends Controller
     public function create(StoreSensorDataPost $request)
     {
         $validated = $request->validated();
-        $deviceId = $validated['deviceId'];
+        $deviceId = $validated['deviceId'] ?? 1;
         $data = collect($validated['data']);
         $now = Carbon::now();
 
