@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Sensor;
 use App\SensorData;
 use App\Http\Requests\StoreSensorDataPost;
 use Illuminate\Http\Request;
@@ -20,11 +21,18 @@ class SensorDataController extends Controller
 
     public function create(StoreSensorDataPost $request)
     {
-        $validated = collect($request->validated()['data']);
-
+        $validated = $request->validated();
+        $deviceId = $validated['deviceId'];
+        $data = collect($validated['data']);
         $now = Carbon::now();
 
-        $validated = $validated->map(function($input) use ($now) {
+        $sensors = Sensor::all();
+        $sensorIdsByName = [];
+        foreach($sensors as $sensor) {
+            $sensorIdsByName[$sensor->name] = $sensor->id;
+        }
+
+        $data = $data->map(function($input) use ($deviceId, $now, $sensorIdsByName) {
             $ts = $input['timestamp'];
             $time = Carbon::now();
             $time->setTimestamp(substr($ts, 0, 10));
@@ -33,13 +41,16 @@ class SensorDataController extends Controller
             if ($time > $now->addHours(48)) {
                 return [];
             }
+
+            if (!isset($sensorIdsByName[$input['type']])) {
+                return [];
+            }
             
+            $input['device_id'] = $deviceId;
+            $input['sensor_id'] = $sensorIdsByName[$input['type']];
             $input['sensored_at'] = $time;
             $input['created_at'] = Carbon::now();
-            $input['updated_at'] = Carbon::now();
-
             $input['value'] = round($input['value'], 2);
-            $input['sensor'] = $input['type'];
 
             unset($input['timestamp']);
             unset($input['type']);
@@ -47,10 +58,8 @@ class SensorDataController extends Controller
             return $input;
         });
 
-        $data = $validated->filter()->toArray();
-
         try {
-            SensorData::insert($data);
+            SensorData::insert($data->filter()->toArray());
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
 
@@ -66,34 +75,11 @@ class SensorDataController extends Controller
 
     public function graph(Request $request)
     {
-        $defaultData = collect([
-            [
-                'sensor' => 'temperature',
-                'count' => 0,
-                'avg' => 0
-            ],
-            [
-                'sensor' => 'humidity',
-                'count' => 0,
-                'avg' => 0
-            ],
-            [
-                'sensor' => 'light',
-                'count' => 0,
-                'avg' => 0
-            ],
-            [
-                'sensor' => 'sound',
-                'count' => 0,
-                'avg' => 0
-            ],
-        ]);
-
         if ($request->get('start') && $request->get('end')) {
             $start = Carbon::createFromTimestamp($request->get('start'));
             $end = Carbon::createFromTimestamp($request->get('end'));
         } else {
-            $start = Carbon::now()->subDays(7)->setTime(0, 0, 0);
+            $start = Carbon::now()->subDays(30)->setTime(0, 0, 0);
             $end = Carbon::now()->setTime(23, 59, 59);
         }
 
@@ -104,21 +90,44 @@ class SensorDataController extends Controller
             ]);
         }
 
-        $delta = $request->get('delta') ?? 24;
+        $deviceId = $request->get('device_id') ?? 1;
+        $delta = $request->get('delta') ?? 60 * 24;
         $data = [];
+
+        $sensors = Sensor::all();
+        $sensorsArr = [];
+
+        foreach($sensors as $sensor) {
+            $sensorsArr[$sensor->id] = [
+                'device_id' => $deviceId,
+                'sensor_id' => $sensor->id,
+                'sensor' => $sensor->name,
+                'count' => 0,
+                'avg' => 0
+            ];
+        }
+
         while ($start < $end) {
             $ts = $start->timestamp;
-            $dataPoint = SensorData::select([
-                    'sensor',
+            $dataPoints = SensorData::select([
+                    'device_id',
+                    'sensor_id',
                     DB::raw('count(id) as count'),
                     DB::raw('round(avg(value), 2) as avg')
                 ])
+                ->where('device_id', $deviceId)
                 ->where('sensored_at', '>=', $start)
                 ->where('sensored_at', '<', $start->clone()->addMinutes($delta))
-                ->groupBy('sensor')
-                ->get();
-           
-            $data[$ts] = $dataPoint->union($defaultData);
+                ->groupBy(['device_id', 'sensor_id'])
+                ->get()
+                ->mapWithKeys(function ($item) use ($sensorsArr) {
+                    $item->sensor = $sensorsArr[$item->sensor_id]['sensor'];
+                    return [$item->sensor_id => $item];
+                })
+                ->toArray();
+
+            $missingSensors = array_diff_key($sensorsArr, $dataPoints);
+            $data[$ts] = array_merge($dataPoints, $missingSensors);
             $start->addMinutes($delta);
         }
        

@@ -15,10 +15,13 @@ class CreateSensorDataTable extends Migration
     {
         Schema::create('sensor_data', function (Blueprint $table) {
             $table->id();
-            $table->string('sensor');
+            $table->unsignedTinyInteger('device_id');
+            $table->unsignedTinyInteger('sensor_id');
             $table->double('value', 8, 2);
             $table->timestamp('sensored_at', 6);
-            $table->timestamps(6);
+            $table->timestamp('created_at', 6)->nullable();
+
+            $table->index(['device_id', 'sensor_id', 'sensored_at']);
         });
     }
 

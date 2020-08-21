@@ -4,16 +4,14 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SensorData extends Model
+class SensorDataOld extends Model
 {
     /**
-     * The timestamps
-     * 
-     * @var array
+     * The table associated with the model.
+     *
+     * @var string
      */
-    public $timestamps = [
-        'created_at'
-    ];
+    protected $table = 'sensor_data_old';
 
     /**
      * The attributes that are mass assignable.
