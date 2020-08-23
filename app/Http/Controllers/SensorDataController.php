@@ -83,10 +83,11 @@ class SensorDataController extends Controller
             $end = Carbon::now()->setTime(23, 59, 59);
         }
 
+        $start->setSeconds(0);
         $deviceId = $request->get('device_id') ?? 1;
-        $delta = $request->get('delta') ?? 60 * 24;
+        $deltaSeconds = 60 * ((int) ($request->get('delta') ?? 60 * 24));
 
-        if ($start >= $end || $delta < 1) {
+        if ($start >= $end || $deltaSeconds < 1) {
             return response()->json([
                 'status' => true,
                 'data' => []
@@ -110,8 +111,8 @@ class SensorDataController extends Controller
         $timestamps = [];
         $currentTs = $start->clone();
         while($currentTs < $end) {
-            $timestamps[$currentTs->timestamp] = $currentTs->clone()->addMinutes($delta)->timestamp;
-            $currentTs->addMinutes($delta);
+            $timestamps[$currentTs->timestamp] = $currentTs->clone()->addSeconds($deltaSeconds)->timestamp;
+            $currentTs->addSeconds($deltaSeconds);
         }
 
         $dataPoints = SensorData::where('device_id', $deviceId)
@@ -121,13 +122,19 @@ class SensorDataController extends Controller
 
         $data = [];
         foreach ($dataPoints as $dataPoint) {
-            $ts = $dataPoint->sensored_at->timestamp;
-            $intervalTs = 0;
+            $ts = $dataPoint->sensored_at->setSeconds(0)->timestamp;
+            $tsOffset = $ts % (60 * 60 * 24);
+            $intervalTs = ($ts - $tsOffset) + ($tsOffset - ($tsOffset % $deltaSeconds));
 
-            foreach ($timestamps as $startTime => $endTime) {
-                if ($ts >= $startTime && $ts < $endTime) {
-                    $intervalTs = $startTime;
-                }
+            if (!isset($timestamps[$intervalTs])) {
+                Log::debug("Could not figure out a correct timestamp! data: ".json_encode([
+                    'datapoint_ts' => $ts,
+                    'start_ts' => $start->timestamp,
+                    'delta_seconds' => $deltaSeconds,
+                    'calculated_ts' => $intervalTs
+                ]));
+                
+                continue;
             }
 
             if (!isset($data[$intervalTs])) {
@@ -135,10 +142,10 @@ class SensorDataController extends Controller
             }
             
             if (!isset($data[$intervalTs][$dataPoint->sensor_id])) {
-                $data[$intervalTs][$dataPoint->sensor_id] = collect();
+                $data[$intervalTs][$dataPoint->sensor_id] = [];
             }
 
-            $data[$intervalTs][$dataPoint->sensor_id]->push($dataPoint->value);
+            $data[$intervalTs][$dataPoint->sensor_id][] = $dataPoint->value;
         }
 
         $returnData = [];
@@ -149,7 +156,7 @@ class SensorDataController extends Controller
                     'device_id' => $deviceId,
                     'sensor_id' => $sensorId,
                     'sensor' => $sensorNamesById[$sensorId],
-                    'avg' => round($sensorCollection->avg(), 2)
+                    'avg' => round(array_sum($sensorCollection) / count($sensorCollection), 2)
                 ];
             }
 
