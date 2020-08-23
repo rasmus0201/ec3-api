@@ -115,9 +115,17 @@ class SensorDataController extends Controller
             $currentTs->addSeconds($deltaSeconds);
         }
 
-        $dataPoints = SensorData::where('device_id', $deviceId)
+        $dataPoints = SensorData::
+            select([
+                'sensor_id',
+                'sensored_at',
+                DB::raw('avg(value) as value')
+            ])
+            ->where('device_id', $deviceId)
             ->where('sensored_at', '>=', $start)
             ->where('sensored_at', '<', $end)
+            ->groupBy(['sensor_id', 'sensored_at'])
+            ->orderBy('sensored_at', 'DESC')
             ->cursor();
 
         $data = [];
