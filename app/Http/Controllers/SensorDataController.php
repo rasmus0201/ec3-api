@@ -83,57 +83,83 @@ class SensorDataController extends Controller
             $end = Carbon::now()->setTime(23, 59, 59);
         }
 
-        if ($start >= $end) {
+        $deviceId = $request->get('device_id') ?? 1;
+        $delta = $request->get('delta') ?? 60 * 24;
+
+        if ($start >= $end || $delta < 1) {
             return response()->json([
                 'status' => true,
                 'data' => []
             ]);
         }
 
-        $deviceId = $request->get('device_id') ?? 1;
-        $delta = $request->get('delta') ?? 60 * 24;
         $data = [];
-
         $sensors = Sensor::all();
         $sensorsArr = [];
-
         foreach($sensors as $sensor) {
             $sensorsArr[$sensor->id] = [
                 'device_id' => $deviceId,
                 'sensor_id' => $sensor->id,
                 'sensor' => $sensor->name,
-                'count' => 0,
                 'avg' => 0
             ];
         }
 
-        while ($start < $end) {
-            $ts = $start->timestamp;
-            $dataPoints = SensorData::select([
-                    'device_id',
-                    'sensor_id',
-                    DB::raw('count(id) as count'),
-                    DB::raw('round(avg(value), 2) as avg')
-                ])
-                ->where('device_id', $deviceId)
-                ->where('sensored_at', '>=', $start)
-                ->where('sensored_at', '<', $start->clone()->addMinutes($delta))
-                ->groupBy(['device_id', 'sensor_id'])
-                ->get()
-                ->mapWithKeys(function ($item) use ($sensorsArr) {
-                    $item->sensor = $sensorsArr[$item->sensor_id]['sensor'];
-                    return [$item->sensor_id => $item];
-                })
-                ->toArray();
+        $sensorNamesById = array_combine(array_column($sensorsArr, 'sensor_id'), array_column($sensorsArr, 'sensor'));
+
+        $timestamps = [];
+        $currentTs = $start->clone();
+        while($currentTs < $end) {
+            $timestamps[$currentTs->timestamp] = $currentTs->clone()->addMinutes($delta)->timestamp;
+            $currentTs->addMinutes($delta);
+        }
+
+        $dataPoints = SensorData::where('device_id', $deviceId)
+            ->where('sensored_at', '>=', $start)
+            ->where('sensored_at', '<', $end)
+            ->cursor();
+
+        $data = [];
+        foreach ($dataPoints as $dataPoint) {
+            $ts = $dataPoint->sensored_at->timestamp;
+            $intervalTs = 0;
+
+            foreach ($timestamps as $startTime => $endTime) {
+                if ($ts >= $startTime && $ts < $endTime) {
+                    $intervalTs = $startTime;
+                }
+            }
+
+            if (!isset($data[$intervalTs])) {
+                $data[$intervalTs] = [];
+            }
+            
+            if (!isset($data[$intervalTs][$dataPoint->sensor_id])) {
+                $data[$intervalTs][$dataPoint->sensor_id] = collect();
+            }
+
+            $data[$intervalTs][$dataPoint->sensor_id]->push($dataPoint->value);
+        }
+
+        $returnData = [];
+        foreach ($data as $intervalTs => $sensorCollections) {
+            $dataPoints = [];
+            foreach ($sensorCollections as $sensorId => $sensorCollection) {
+                $dataPoints[$sensorId] = [
+                    'device_id' => $deviceId,
+                    'sensor_id' => $sensorId,
+                    'sensor' => $sensorNamesById[$sensorId],
+                    'avg' => round($sensorCollection->avg(), 2)
+                ];
+            }
 
             $missingSensors = array_diff_key($sensorsArr, $dataPoints);
-            $data[$ts] = array_merge($dataPoints, $missingSensors);
-            $start->addMinutes($delta);
+            $returnData[$intervalTs] = array_merge($dataPoints, $missingSensors);
         }
-       
+
         return response()->json([
             'status' => true,
-            'data' => $data
+            'data' => $returnData
         ]);
     }
 }

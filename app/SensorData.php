@@ -34,4 +34,9 @@ class SensorData extends Model
     ];
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
+
+    public function sensor()
+    {
+        return $this->belongsTo(Sensor::class);
+    }
 }

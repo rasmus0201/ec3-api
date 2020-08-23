@@ -2,13 +2,13 @@
     <div class="container-fluid py-3">
         <div class="row">
             <div class="col-3">
-                <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
+                <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS"></datetime>
             </div>
             <div class="col-3">
-                <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS" @close="getData"></datetime>
+                <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS"></datetime>
             </div>
             <div class="col-2">
-                <input class="form-control" type="number" v-model="delta" placeholder="Time between datapoints" @change="getData">
+                <input class="form-control" type="number" v-model="delta" placeholder="Time between datapoints">
             </div>
             <div class="col-2">
                 <select class="form-control" v-model="interval">
@@ -75,7 +75,7 @@ export default {
         },
         dateInterval() {
             let s = DateTime.fromISO(this.startDate);
-            let e = DateTime.fromISO(this.endDate).minus({ seconds: 1 });
+            let e = DateTime.fromISO(this.endDate);
 
             return 'start='+s.toSeconds()+"&end="+e.toSeconds();
         },

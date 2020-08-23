@@ -14,4 +14,9 @@ class Sensor extends Model
     protected $fillable = [
         'name'
     ];
+
+    public function sensorData()
+    {
+        return $this->hasMany(SensorData::class);
+    }
 }
