@@ -4,6 +4,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\SensorDataController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,7 +41,7 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    Route::get('/sensors', 'SensorDataController@index');
-    Route::get('/graph', 'SensorDataController@graph');
-    Route::post('/sensors', 'SensorDataController@create');
+    Route::get('/sensors', [SensorDataController::class, 'index']);
+    Route::post('/sensors', [SensorDataController::class, 'create']);
+    Route::get('/graph', [SensorDataController::class, 'graph']);
 });
