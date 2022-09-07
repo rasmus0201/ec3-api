@@ -10,6 +10,8 @@ use Illuminate\Support\Arr;
  */
 class SensorDataFactory extends Factory
 {
+    protected $model = \App\Models\SensorData::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,9 +22,11 @@ class SensorDataFactory extends Factory
         $sensors = [1, 2, 3, 4];
 
         return [
+            'device_id' => 1,
             'sensor_id' => Arr::random($sensors),
             'value' => rand(0, 1023),
-            'sensored_at' => faker()->dateTimeBetween('-10 days', 'now')
+            'sensored_at' => $this->faker->dateTimeBetween('-10 days', 'now'),
+            'created_at' => now(),
         ];
     }
 }

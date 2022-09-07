@@ -3,17 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SensorData extends Model
 {
-    /**
-     * The timestamps
-     *
-     * @var array
-     */
-    public $timestamps = [
-        'created_at'
-    ];
+    use HasFactory;
+
+    public const CREATED_AT = 'created_at';
+    public const UPDATED_AT = null;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +18,7 @@ class SensorData extends Model
      * @var array
      */
     protected $fillable = [
-        'sensor_id', 'value', 'sensored_at',
+        'sensor_id', 'value', 'sensored_at', 'created_at',
     ];
 
     /**
