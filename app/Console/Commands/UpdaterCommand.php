@@ -63,7 +63,7 @@ class UpdaterCommand extends Command
             SensorData::insert($newData);
             $this->info('Inserted one chunk of 500.');
         });
-        
+
         return 0;
     }
 }

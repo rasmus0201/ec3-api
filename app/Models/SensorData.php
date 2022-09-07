@@ -1,17 +1,19 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SensorDataOld extends Model
+class SensorData extends Model
 {
     /**
-     * The table associated with the model.
+     * The timestamps
      *
-     * @var string
+     * @var array
      */
-    protected $table = 'sensor_data_old';
+    public $timestamps = [
+        'created_at'
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -32,4 +34,9 @@ class SensorDataOld extends Model
     ];
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
+
+    public function sensor()
+    {
+        return $this->belongsTo(Sensor::class);
+    }
 }

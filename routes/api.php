@@ -26,19 +26,19 @@ Route::prefix('v1')->group(function () {
 
         $dataPoints = 100;
         $data = [];
-        for ($i=0; $i < $dataPoints; $i++) { 
+        for ($i=0; $i < $dataPoints; $i++) {
             $data[] = [
                 'sensor' => Arr::random($sensors),
                 'value' => rand(0, 1023),
                 'sensored_at' => round(microtime(true) * 1000)
             ];
         }
-        
+
         return response()->json([
             'data' => $data
         ]);
     });
-    
+
     Route::get('/sensors', 'SensorDataController@index');
     Route::get('/graph', 'SensorDataController@graph');
     Route::post('/sensors', 'SensorDataController@create');
