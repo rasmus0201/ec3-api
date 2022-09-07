@@ -1,6 +1,8 @@
 <?php
 
-use App\SensorData;
+namespace Database\Seeders;
+
+use App\Models\SensorData;
 use Illuminate\Database\Seeder;
 
 class SensorDataSeeder extends Seeder

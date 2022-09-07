@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Sensor;
-use App\SensorData;
+use App\Models\Sensor;
+use App\Models\SensorData;
 use App\Http\Requests\StoreSensorDataPost;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -45,7 +45,7 @@ class SensorDataController extends Controller
             if (!isset($sensorIdsByName[$input['type']])) {
                 return [];
             }
-            
+
             $input['device_id'] = $deviceId;
             $input['sensor_id'] = $sensorIdsByName[$input['type']];
             $input['sensored_at'] = $time;
@@ -141,14 +141,14 @@ class SensorDataController extends Controller
                     'delta_seconds' => $deltaSeconds,
                     'calculated_ts' => $intervalTs
                 ]));
-                
+
                 continue;
             }
 
             if (!isset($data[$intervalTs])) {
                 $data[$intervalTs] = [];
             }
-            
+
             if (!isset($data[$intervalTs][$dataPoint->sensor_id])) {
                 $data[$intervalTs][$dataPoint->sensor_id] = [];
             }

@@ -1,6 +1,8 @@
 <?php
 
-use App\Sensor;
+namespace Database\Seeders;
+
+use App\Models\Sensor;
 use Illuminate\Database\Seeder;
 
 class SensorSeeder extends Seeder
@@ -12,9 +14,9 @@ class SensorSeeder extends Seeder
      */
     public function run()
     {
-        Sensor::create(['name' => 'temperature']);   
-        Sensor::create(['name' => 'humidity']);   
-        Sensor::create(['name' => 'light']);   
-        Sensor::create(['name' => 'sound']);   
+        Sensor::create(['name' => 'temperature']);
+        Sensor::create(['name' => 'humidity']);
+        Sensor::create(['name' => 'light']);
+        Sensor::create(['name' => 'sound']);
     }
 }

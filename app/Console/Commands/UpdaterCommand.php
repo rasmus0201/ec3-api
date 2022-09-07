@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Sensor;
-use App\SensorData;
-use App\SensorDataOld;
+use App\Models\Sensor;
+use App\Models\SensorData;
+use App\Models\SensorDataOld;
 use Illuminate\Console\Command;
 
 class UpdaterCommand extends Command
