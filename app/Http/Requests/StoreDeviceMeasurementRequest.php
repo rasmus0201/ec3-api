@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Sensor;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreSensorDataPost extends FormRequest
+class StoreDeviceMeasurementRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,7 +20,7 @@ class StoreSensorDataPost extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function rules()
     {
@@ -28,17 +29,17 @@ class StoreSensorDataPost extends FormRequest
                 'required',
                 'array'
             ],
-            'data.*.type' => [
+            'data.*.sid' => [
                 'required',
-                'in:humidity,temperature,light,sound,vibration'
-            ], 
-            'data.*.value' => [
-                'required',
-                'numeric'
+                'exists:' . Sensor::class . ',id',
             ],
-            'data.*.timestamp' => [
+            'data.*.ts' => [
                 'required',
                 'integer'
+            ],
+            'data.*.v' => [
+                'required',
+                'numeric'
             ],
         ];
     }

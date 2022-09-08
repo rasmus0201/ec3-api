@@ -2,26 +2,50 @@
     <div class="container-fluid py-3">
         <div class="row">
             <div class="col-3">
-                <datetime v-model="startDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS"></datetime>
+                <datetime
+                    v-model="startDate"
+                    type="datetime"
+                    :format="dt.DATETIME_MED_WITH_SECONDS"
+                ></datetime>
             </div>
             <div class="col-3">
-                <datetime v-model="endDate" type="datetime" :format="dt.DATETIME_MED_WITH_SECONDS"></datetime>
+                <datetime
+                    v-model="endDate"
+                    type="datetime"
+                    :format="dt.DATETIME_MED_WITH_SECONDS"
+                ></datetime>
             </div>
             <div class="col-2">
-                <input class="form-control" type="number" v-model="delta" placeholder="Time between datapoints">
+                <input
+                    class="form-control"
+                    type="number"
+                    v-model="delta"
+                    placeholder="Time between datapoints"
+                />
             </div>
             <div class="col-2">
                 <select class="form-control" v-model="interval">
-                    <option v-for="(val, index) in intervals" :value="val.multiplier" :key="index" :selected="interval == val.multiplier">
+                    <option
+                        v-for="(val, index) in intervals"
+                        :value="val.multiplier"
+                        :key="index"
+                        :selected="interval == val.multiplier"
+                    >
                         {{ val.label }}
                     </option>
                 </select>
             </div>
             <div class="col-2">
-                <button @click="getData" class="btn btn-primary">Refresh</button>
+                <button @click="getData" class="btn btn-primary">
+                    Refresh
+                </button>
             </div>
         </div>
-        <LineGraph class="mt-3" :chart-data="chartData" :options="chartOptions" />
+        <LineGraph
+            class="mt-3"
+            :chart-data="chartData"
+            :options="chartOptions"
+        />
     </div>
 </template>
 
@@ -36,6 +60,7 @@ export default {
     },
     data() {
         return {
+            deviceId: 1,
             delta: 1,
             interval: 60,
             startDate: DateTime.local().startOf('day').toISO(),
@@ -77,7 +102,7 @@ export default {
             let s = DateTime.fromISO(this.startDate);
             let e = DateTime.fromISO(this.endDate);
 
-            return 'start='+s.toSeconds()+"&end="+e.toSeconds();
+            return `start=${s.toSeconds()}&end=${e.toSeconds()}`;
         },
         deltaSeconds() {
             return this.delta * this.interval;
@@ -88,7 +113,7 @@ export default {
     },
     methods: {
         getData() {
-            fetch('api/v1/graph?delta='+this.deltaSeconds+'&'+this.dateInterval)
+            fetch(`/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`)
                 .then((res) => res.json())
                 .then((result) => {
                     const data = result.data;
@@ -140,19 +165,19 @@ export default {
 </script>
 
 <style lang="scss">
-    .vdatetime-input {
-        display: block;
-        width: 100%;
-        height: calc(1.5em + .75rem + 2px);
-        padding: .375rem .75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: .25rem;
-        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-    }
+.vdatetime-input {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
 </style>

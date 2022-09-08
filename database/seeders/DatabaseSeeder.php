@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,7 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(SensorSeeder::class);
-        $this->call(SensorDataSeeder::class);
+        $this->call(DefaultDataSeeder::class);
+        $this->call(TestDataSeeder::class);
     }
 }

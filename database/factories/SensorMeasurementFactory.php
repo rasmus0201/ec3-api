@@ -8,9 +8,9 @@ use Illuminate\Support\Arr;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
-class SensorDataFactory extends Factory
+class SensorMeasurementFactory extends Factory
 {
-    protected $model = \App\Models\SensorData::class;
+    protected $model = \App\Models\SensorMeasurement::class;
 
     /**
      * Define the model's default state.
@@ -25,7 +25,7 @@ class SensorDataFactory extends Factory
             'device_id' => 1,
             'sensor_id' => Arr::random($sensors),
             'value' => rand(0, 1023),
-            'sensored_at' => $this->faker->dateTimeBetween('-10 days', 'now'),
+            'measured_at' => $this->faker->dateTimeBetween('-10 days', 'now'),
             'created_at' => now(),
         ];
     }

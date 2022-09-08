@@ -13,15 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sensor_data', function (Blueprint $table) {
+        Schema::create('sensor_measurements', function (Blueprint $table) {
             $table->id();
             $table->unsignedTinyInteger('device_id');
             $table->unsignedTinyInteger('sensor_id');
             $table->double('value', 8, 2);
-            $table->timestamp('sensored_at', 6);
+            $table->timestamp('measured_at', 6);
             $table->timestamp('created_at', 6)->nullable();
 
-            $table->index(['device_id', 'sensor_id', 'sensored_at']);
+            $table->index(['device_id', 'sensor_id', 'measured_at']);
         });
     }
 
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sensor_data');
+        Schema::dropIfExists('sensor_measurements');
     }
 };

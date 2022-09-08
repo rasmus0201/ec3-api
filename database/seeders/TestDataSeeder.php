@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\SensorData;
+use App\Models\SensorMeasurement;
 use Illuminate\Database\Seeder;
 
-class SensorDataSeeder extends Seeder
+class TestDataSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,7 +14,7 @@ class SensorDataSeeder extends Seeder
      */
     public function run()
     {
-        SensorData::truncate();
-        SensorData::factory()->count(1000)->create();
+        // Generate random sensor data
+        SensorMeasurement::factory()->count(1000)->create();
     }
 }
