@@ -126,6 +126,11 @@ class DeviceMeasurementController extends Controller
         $now = Carbon::now();
         $data = collect($request->validated('data'));
 
+        $device->load('sensors');
+
+        Log::debug(json_encode($device->sensors->toArray()));
+        Log::debug(json_encode($device->sensors->has('light')));
+
         $measurements = $data->map(function ($input) use ($device, $now) {
             $ts = $input['ts'];
             $time = Carbon::now();
@@ -136,9 +141,13 @@ class DeviceMeasurementController extends Controller
                 return [];
             }
 
+            $sensor = Sensor::where('name', $input['t'])->first();
+            // if ($device->sensors->has()) {
+            // }
+
             return [
                 'device_id' => $device->id,
-                'sensor_id' => Sensor::where('name', $input['t'])->first()->id,
+                'sensor_id' => $sensor->id,
                 'value' => round($input['v'], 2),
                 'measured_at' => $time,
                 'created_at' => Carbon::now(),
