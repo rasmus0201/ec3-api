@@ -29,9 +29,10 @@ class StoreDeviceMeasurementRequest extends FormRequest
                 'required',
                 'array'
             ],
-            'data.*.sid' => [
+            'data.*.t' => [
                 'required',
-                'exists:' . Sensor::class . ',id',
+                'string',
+                'exists:' . Sensor::class . ',name',
             ],
             'data.*.ts' => [
                 'required',

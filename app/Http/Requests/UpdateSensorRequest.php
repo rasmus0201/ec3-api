@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Sensor;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateSensorRequest extends FormRequest
 {
@@ -24,7 +26,13 @@ class UpdateSensorRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|min:1|max:255',
+            'name' => [
+                'required',
+                'string',
+                'min:1',
+                'max:255',
+                Rule::unique(Sensor::class, 'name')->ignore($this->sensor->name, 'name'),
+            ],
         ];
     }
 }

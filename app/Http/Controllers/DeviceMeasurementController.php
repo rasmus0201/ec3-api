@@ -138,7 +138,7 @@ class DeviceMeasurementController extends Controller
 
             return [
                 'device_id' => $device->id,
-                'sensor_id' => $input['sid'],
+                'sensor_id' => Sensor::where('name', $input['t'])->first()->id,
                 'value' => round($input['v'], 2),
                 'measured_at' => $time,
                 'created_at' => Carbon::now(),
