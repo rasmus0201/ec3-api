@@ -30,8 +30,8 @@ class DeviceController extends Controller
             'location_id' => $request->validated('location_id'),
         ]);
 
-        if ($sensorIds = $request->validated('sensor_ids')) {
-            $device->sensors()->attach($sensorIds);
+        if ($sensors = $request->validated('sensors')) {
+            $device->sensors()->attach($sensors);
         }
 
         return JsonResponseFactory::created(
@@ -60,10 +60,10 @@ class DeviceController extends Controller
             $device->location_id = $locationId;
         }
 
-        if ($sensorIds = $request->validated('sensor_ids')) {
-            foreach ($sensorIds as $existingId => $value) {
+        if ($sensors = $request->validated('sensors')) {
+            foreach ($sensors as $existing => $value) {
                 if ($value === null) {
-                    $device->sensors()->detach($existingId);
+                    $device->sensors()->detach($existing);
                     continue;
                 }
 

@@ -24,7 +24,7 @@ class UpdateSensorRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|min:1|max:255',
+            'name' => 'required|string|min:1|max:255|unique:' . Sensor::class . ',name,' . $this->id,
         ];
     }
 }

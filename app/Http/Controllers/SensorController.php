@@ -26,7 +26,7 @@ class SensorController extends Controller
     public function store(StoreSensorRequest $request): JsonResponse
     {
         $sensor = Sensor::create([
-            'name' => $request->validated('name'),
+            'name' => mb_strtolower($request->validated('name')),
         ]);
 
         return JsonResponseFactory::created(new SensorResource($sensor));
@@ -46,7 +46,7 @@ class SensorController extends Controller
     public function update(UpdateSensorRequest $request, Sensor $sensor): JsonResponse
     {
         if ($name = $request->validated('name')) {
-            $sensor->name = $name;
+            $sensor->name = mb_strtolower($name);
         }
 
         $sensor->touch();

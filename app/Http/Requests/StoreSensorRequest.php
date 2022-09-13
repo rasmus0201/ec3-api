@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Sensor;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSensorRequest extends FormRequest
@@ -24,7 +25,7 @@ class StoreSensorRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|min:1|max:255',
+            'name' => 'required|string|min:1|max:255|unique:' . Sensor::class . ',name',
         ];
     }
 }
