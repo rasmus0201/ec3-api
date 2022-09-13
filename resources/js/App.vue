@@ -113,8 +113,8 @@ export default {
     },
     methods: {
         getData() {
-            fetch({
-                url: `/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`,
+            fetch(`/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`, {
+                method: 'GET',
                 headers: {
                     Authorization: "05Cknj50fawAOaUrDDmy2158X817BNmuDlDldQmbFHtpqJ05Iq3oitxmyrh8D82F",
                 },
