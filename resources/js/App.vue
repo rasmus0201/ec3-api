@@ -51,47 +51,47 @@
 
 <script>
 import { DateTime } from "luxon";
-import LineGraph from './Components/LineGraph.vue';
+import LineGraph from "./Components/LineGraph.vue";
 
 export default {
     name: "App",
     components: {
-        LineGraph
+        LineGraph,
     },
     data() {
         return {
             deviceId: 1,
             delta: 1,
             interval: 60,
-            startDate: DateTime.local().startOf('day').toISO(),
-            endDate: DateTime.local().endOf('day').toISO(),
+            startDate: DateTime.local().startOf("day").toISO(),
+            endDate: DateTime.local().endOf("day").toISO(),
             chartData: {},
             chartOptions: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
             },
             intervals: [
                 {
                     multiplier: 1,
-                    label: 'Min'
+                    label: "Min",
                 },
                 {
                     multiplier: 60,
-                    label: 'Hour'
+                    label: "Hour",
                 },
                 {
                     multiplier: 60 * 24,
-                    label: 'Day'
+                    label: "Day",
                 },
             ],
             chartColors: {
-                humidity: '#ff0000',
-                light: '#00ff00',
-                sound: '#0000ff',
-                temperature: '#ffff00',
-                vibration: '#ff00ff',
-                secondary: '#00ffff',
-            }
+                humidity: "#ff0000",
+                light: "#00ff00",
+                sound: "#0000ff",
+                temperature: "#ffff00",
+                vibration: "#ff00ff",
+                secondary: "#00ffff",
+            },
         };
     },
     computed: {
@@ -106,14 +106,19 @@ export default {
         },
         deltaSeconds() {
             return this.delta * this.interval;
-        }
+        },
     },
     mounted() {
         this.getData();
     },
     methods: {
         getData() {
-            fetch(`/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`)
+            fetch({
+                url: `/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`,
+                headers: {
+                    Authorization: "05Cknj50fawAOaUrDDmy2158X817BNmuDlDldQmbFHtpqJ05Iq3oitxmyrh8D82F",
+                },
+            })
                 .then((res) => res.json())
                 .then((result) => {
                     const data = result.data;
@@ -125,19 +130,29 @@ export default {
                             const dataPoints = data[key];
 
                             const d = DateTime.fromSeconds(parseInt(key, 10));
-                            labels.push(d.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS));
+                            labels.push(
+                                d.toLocaleString(
+                                    DateTime.DATETIME_SHORT_WITH_SECONDS
+                                )
+                            );
 
                             for (const dataPoint of dataPoints) {
-                                if (typeof pivot[dataPoint.sensor] === "undefined") {
+                                if (
+                                    typeof pivot[dataPoint.sensor] ===
+                                    "undefined"
+                                ) {
                                     pivot[dataPoint.sensor] = {
                                         fill: false,
                                         label: dataPoint.sensor,
-                                        borderColor: this.chartColors[dataPoint.sensor],
-                                        data: []
+                                        borderColor:
+                                            this.chartColors[dataPoint.sensor],
+                                        data: [],
                                     };
                                 }
 
-                                pivot[dataPoint.sensor].data.push(dataPoint.avg);
+                                pivot[dataPoint.sensor].data.push(
+                                    dataPoint.avg
+                                );
                             }
                         }
                     }
@@ -156,11 +171,11 @@ export default {
 
                     this.chartData = {
                         labels,
-                        datasets
+                        datasets,
                     };
                 });
-        }
-    }
+        },
+    },
 };
 </script>
 
