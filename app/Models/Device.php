@@ -45,6 +45,6 @@ class Device extends Model
         return $this->belongsToMany(Sensor::class, DeviceSensor::getModelTable())
             ->using(DeviceSensor::class)
             ->withTimestamps()
-            ->as('sensors');
+            ->as('pivot');
     }
 }

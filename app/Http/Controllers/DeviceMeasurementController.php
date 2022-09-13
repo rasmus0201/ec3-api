@@ -128,10 +128,12 @@ class DeviceMeasurementController extends Controller
 
         $device->load('sensors');
 
-        Log::debug(json_encode($device->sensors->toArray()));
-        Log::debug(json_encode($device->sensors->has('light')));
+        // Create a map of sensorName => sensorId.
+        $sensors = Sensor::all()->mapToDictionary(function (Sensor $value) {
+            return [$value->name => $value->id];
+        });
 
-        $measurements = $data->map(function ($input) use ($device, $now) {
+        $measurements = $data->map(function ($input) use ($device, $sensors, $now) {
             $ts = $input['ts'];
             $time = Carbon::now();
             $time->setTimestamp(substr($ts, 0, 10));
@@ -141,13 +143,13 @@ class DeviceMeasurementController extends Controller
                 return [];
             }
 
-            $sensor = Sensor::where('name', $input['t'])->first();
-            // if ($device->sensors->has()) {
-            // }
+            if ($device->sensors->pluck('name')->contains($input['t'])) {
+                return [];
+            }
 
             return [
                 'device_id' => $device->id,
-                'sensor_id' => $sensor->id,
+                'sensor_id' => $sensors[$input['t']],
                 'value' => round($input['v'], 2),
                 'measured_at' => $time,
                 'created_at' => Carbon::now(),
