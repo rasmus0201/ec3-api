@@ -27,8 +27,8 @@ class UpdateDeviceRequest extends FormRequest
         return [
             'name' => 'required|string|min:1|max:255',
             'location_id' => 'integer|exists:' . Location::class . ',id',
-            'sensor_ids' => 'array',
-            'sensor_ids.*' => 'nullable|integer|distinct|exists:' . Sensor::class . ',name',
+            'sensors' => 'array',
+            'sensors.*' => 'nullable|string|distinct|exists:' . Sensor::class . ',name',
         ];
     }
 }

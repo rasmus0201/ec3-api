@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\JsonResponseFactory;
 use App\Http\Requests\{StoreDeviceRequest, UpdateDeviceRequest};
 use App\Http\Resources\DeviceResource;
-use App\Models\Device;
+use App\Models\{Device, Sensor};
 use Illuminate\Http\JsonResponse;
 
 class DeviceController extends Controller
@@ -31,7 +31,7 @@ class DeviceController extends Controller
         ]);
 
         if ($sensors = $request->validated('sensors')) {
-            $device->sensors()->attach($sensors);
+            $device->sensors()->attach(Sensor::whereIn('name', $sensors)->get()->pluck('id'));
         }
 
         return JsonResponseFactory::created(
@@ -63,11 +63,16 @@ class DeviceController extends Controller
         if ($sensors = $request->validated('sensors')) {
             foreach ($sensors as $existing => $value) {
                 if ($value === null) {
-                    $device->sensors()->detach($existing);
+                    if ($device->sensors()->where('name', $existing)->count() > 0) {
+                        $device->sensors()->detach(Sensor::where('name', $existing)->get()->pluck('id'));
+                    }
+
                     continue;
                 }
 
-                $device->sensors()->attach($value);
+                if ($device->sensors()->where('name', $value)->count() === 0) {
+                    $device->sensors()->attach(Sensor::where('name', $value)->get()->pluck('id'));
+                }
             }
         }
 

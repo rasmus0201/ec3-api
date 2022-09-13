@@ -27,8 +27,8 @@ class StoreDeviceRequest extends FormRequest
         return [
             'name' => 'required|string|min:1|max:255',
             'location_id' => 'required|integer|exists:' . Location::class . ',id',
-            'sensor_ids' => 'array',
-            'sensor_ids.*' => 'integer|distinct|exists:' . Sensor::class . ',id',
+            'sensors' => 'array',
+            'sensors.*' => 'string|distinct|exists:' . Sensor::class . ',name',
         ];
     }
 }
