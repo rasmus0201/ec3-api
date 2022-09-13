@@ -129,7 +129,7 @@ class DeviceMeasurementController extends Controller
         $device->load('sensors');
 
         // Create a map of sensorName => sensorId.
-        $sensors = Sensor::all()->mapToDictionary(function (Sensor $value) {
+        $sensors = Sensor::all()->mapWithKeys(function (Sensor $value) {
             return [$value->name => $value->id];
         });
 
@@ -143,7 +143,7 @@ class DeviceMeasurementController extends Controller
                 return [];
             }
 
-            if ($device->sensors->pluck('name')->contains($input['t'])) {
+            if (!$device->sensors->pluck('name')->contains($input['t'])) {
                 return [];
             }
 
