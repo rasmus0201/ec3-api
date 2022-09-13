@@ -109,7 +109,7 @@ class JsonResponseFactory
     private static function response(
         ?string $message = null,
         mixed $data = null,
-        int $statusCode
+        int $statusCode = 200
     ): JsonResponse {
         // Make sure there is 1 and only 1 data key in response.
         if (!is_array($data) || (is_array($data) && !isset($data['data']))) {
