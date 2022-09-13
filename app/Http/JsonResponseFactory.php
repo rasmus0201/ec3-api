@@ -52,7 +52,7 @@ class JsonResponseFactory
     }
 
     /**
-     * Kaldes hvis din request er forbidden/unauthorized.
+     * Kaldes hvis din request er forbidden.
      *
      * Returnere en fejl JSON response.
      */
