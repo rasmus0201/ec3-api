@@ -61,10 +61,16 @@ export default {
     data() {
         return {
             deviceId: 1,
-            delta: 1,
-            interval: 60,
-            startDate: DateTime.local().startOf("day").toISO(),
-            endDate: DateTime.local().endOf("day").toISO(),
+            delta: 10,
+            interval: 1,
+            startDate: DateTime.local()
+                .startOf("day")
+                .plus({ hours: 6 })
+                .toISO(),
+            endDate: DateTime.local()
+                .startOf("day")
+                .plus({ hours: 15 })
+                .toISO(),
             chartData: {},
             chartOptions: {
                 responsive: true,
