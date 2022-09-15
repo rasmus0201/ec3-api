@@ -99,8 +99,8 @@ export default {
             return DateTime;
         },
         dateInterval() {
-            let s = DateTime.fromISO(this.startDate);
-            let e = DateTime.fromISO(this.endDate);
+            let s = DateTime.fromISO(this.startDate).toUTC();
+            let e = DateTime.fromISO(this.endDate).toUTC();
 
             return `start=${s.toSeconds()}&end=${e.toSeconds()}`;
         },
@@ -113,12 +113,16 @@ export default {
     },
     methods: {
         getData() {
-            fetch(`/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`, {
-                method: 'GET',
-                headers: {
-                    Authorization: "05Cknj50fawAOaUrDDmy2158X817BNmuDlDldQmbFHtpqJ05Iq3oitxmyrh8D82F",
-                },
-            })
+            fetch(
+                `/api/v1/devices/${this.deviceId}/measurements/?delta=${this.deltaSeconds}&${this.dateInterval}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization:
+                            "05Cknj50fawAOaUrDDmy2158X817BNmuDlDldQmbFHtpqJ05Iq3oitxmyrh8D82F",
+                    },
+                }
+            )
                 .then((res) => res.json())
                 .then((result) => {
                     const data = result.data;
@@ -127,7 +131,7 @@ export default {
                     const pivot = {};
                     for (const key in data) {
                         if (data.hasOwnProperty(key)) {
-                            const dataPoints = data[key];
+                            const dataPoints = Object.values(data[key]);
 
                             const d = DateTime.fromSeconds(parseInt(key, 10));
                             labels.push(
@@ -135,6 +139,8 @@ export default {
                                     DateTime.DATETIME_SHORT_WITH_SECONDS
                                 )
                             );
+
+                            console.log(dataPoints);
 
                             for (const dataPoint of dataPoints) {
                                 if (
