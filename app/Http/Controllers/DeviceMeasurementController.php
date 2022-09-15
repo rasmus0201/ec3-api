@@ -6,6 +6,8 @@ use App\Http\JsonResponseFactory;
 use App\Http\Requests\StoreDeviceMeasurementRequest;
 use App\Models\{Device, Sensor, SensorMeasurement};
 use Carbon\Carbon;
+use DateInterval;
+use DatePeriod;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{DB, Log};
 
@@ -17,8 +19,8 @@ class DeviceMeasurementController extends Controller
     public function index(Request $request, Device $device)
     {
         if ($request->get('start') && $request->get('end')) {
-            $start = Carbon::createFromTimestamp($request->get('start'));
-            $end = Carbon::createFromTimestamp($request->get('end'));
+            $start = Carbon::createFromTimestamp($request->get('start'), 'UTC');
+            $end = Carbon::createFromTimestamp($request->get('end'), 'UTC');
         } else {
             $start = Carbon::now()->subDays(30)->setTime(0, 0, 0);
             $end = Carbon::now()->setTime(23, 59, 59);
@@ -33,28 +35,29 @@ class DeviceMeasurementController extends Controller
             ]);
         }
 
-        $data = [];
         $sensors = Sensor::all();
         $sensorsArr = [];
         foreach ($sensors as $sensor) {
             $sensorsArr[$sensor->id] = [
-                'device_id' => $device->id,
-                'sensor_id' => $sensor->id,
-                'sensor' => $sensor->name,
-                'avg' => 0
+                'id' => $sensor->id,
+                'name' => $sensor->name,
             ];
         }
 
         $sensorNamesById = array_combine(
-            array_column($sensorsArr, 'sensor_id'),
-            array_column($sensorsArr, 'sensor')
+            array_column($sensorsArr, 'id'),
+            array_column($sensorsArr, 'name')
         );
 
+        $interval = new DateInterval("PT{$deltaSeconds}S");
+        $intervals = new DatePeriod($start, $interval, $end);
+
         $timestamps = [];
-        $currentTs = $start->clone();
-        while ($currentTs < $end) {
-            $timestamps[$currentTs->timestamp] = $currentTs->clone()->addSeconds($deltaSeconds)->timestamp;
-            $currentTs->addSeconds($deltaSeconds);
+        foreach ($intervals as $intervalDate) {
+            $timestamps[$intervalDate->getTimestamp()] = array_fill_keys(
+                array_keys($sensorsArr),
+                []
+            );
         }
 
         $dataPoints = SensorMeasurement::select([
@@ -69,48 +72,40 @@ class DeviceMeasurementController extends Controller
             ->orderBy('measured_at', 'DESC')
             ->cursor();
 
-        $data = [];
         foreach ($dataPoints as $dataPoint) {
             $ts = $dataPoint->measured_at->setSeconds(0)->timestamp;
             $tsOffset = $ts % (60 * 60 * 24);
             $intervalTs = ($ts - $tsOffset) + ($tsOffset - ($tsOffset % $deltaSeconds));
 
-            if (!isset($timestamps[$intervalTs])) {
+            if (!isset($timestamps[$intervalTs]) || !isset($timestamps[$intervalTs][$dataPoint->sensor_id])) {
                 Log::debug("Could not figure out a correct timestamp! data: " . json_encode([
                     'datapoint_ts' => $ts,
                     'start_ts' => $start->timestamp,
                     'delta_seconds' => $deltaSeconds,
-                    'calculated_ts' => $intervalTs
+                    'calculated_ts' => $intervalTs,
+                    'sensor_id' => $dataPoint->sensor_id,
                 ]));
 
                 continue;
             }
 
-            if (!isset($data[$intervalTs])) {
-                $data[$intervalTs] = [];
-            }
-
-            if (!isset($data[$intervalTs][$dataPoint->sensor_id])) {
-                $data[$intervalTs][$dataPoint->sensor_id] = [];
-            }
-
-            $data[$intervalTs][$dataPoint->sensor_id][] = $dataPoint->value;
+            $timestamps[$intervalTs][$dataPoint->sensor_id][] = $dataPoint->value;
         }
 
+        // dd($timestamps);
+
         $returnData = [];
-        foreach ($data as $intervalTs => $sensorCollections) {
+        foreach ($timestamps as $intervalTs => $sensorCollections) {
             $dataPoints = [];
             foreach ($sensorCollections as $sensorId => $sensorCollection) {
                 $dataPoints[$sensorId] = [
-                    'device_id' => $device->id,
                     'sensor_id' => $sensorId,
                     'sensor' => $sensorNamesById[$sensorId],
-                    'avg' => round(array_sum($sensorCollection) / count($sensorCollection), 2)
+                    'avg' => count($sensorCollection) > 0 ? round(array_sum($sensorCollection) / count($sensorCollection), 2) : 0.0,
                 ];
             }
 
-            $missingSensors = array_diff_key($sensorsArr, $dataPoints);
-            $returnData[$intervalTs] = array_merge($dataPoints, $missingSensors);
+            $returnData[$intervalTs] = $dataPoints;
         }
 
         return JsonResponseFactory::success([
