@@ -140,8 +140,6 @@ export default {
                                 )
                             );
 
-                            console.log(dataPoints);
-
                             for (const dataPoint of dataPoints) {
                                 if (
                                     typeof pivot[dataPoint.sensor] ===
