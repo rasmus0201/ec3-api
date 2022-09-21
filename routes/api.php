@@ -1,6 +1,12 @@
 <?php
 
-use App\Http\Controllers\{DeviceController, DeviceMeasurementController, LocationController, SensorController};
+use App\Http\Controllers\{
+    DeviceController,
+    DeviceMeasurementController,
+    ImageController,
+    LocationController,
+    SensorController
+};
 use App\Http\JsonResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -55,10 +61,7 @@ Route::prefix('v1')->group(function () {
         'store',
     ]);
 
-    // Route::apiResource('/sensor-data', SensorDataController::class)->only([
-    //     'index',
-    //     'store',
-    // ]);
-
-    // Route::get('/sensor-data/graph', [SensorDataController::class, 'graph']);
+    Route::apiResource('device.image', ImageController::class)->only([
+        'store',
+    ]);
 });
