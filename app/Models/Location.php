@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DateTime;
+use DateTimeZone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $name
+ * @property string $timezone
  * @property float $lat
  * @property float $long
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -37,6 +40,7 @@ class Location extends Model
 
     protected $fillable = [
         'name',
+        'timezone',
         'lat',
         'long',
     ];
@@ -49,5 +53,13 @@ class Location extends Model
     public function devices()
     {
         return $this->hasMany(Device::class);
+    }
+
+    public function getTimezoneOffset(): int
+    {
+        $timezoneModel = new DateTimeZone($this->timezone);
+        $utc = new DateTime('now', new DateTimeZone('UTC'));
+
+        return $timezoneModel->getOffset($utc);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreLocationRequest extends FormRequest
 {
@@ -27,6 +28,11 @@ class StoreLocationRequest extends FormRequest
             'name' => 'required|string|min:1|max:255',
             'lat' => 'required|numeric|between:-90.0,90.0',
             'long' => 'required|numeric|between:-180.0,180.0',
+            'timezone' => [
+                'required',
+                'string',
+                Rule::in(timezone_identifiers_list())
+            ],
         ];
     }
 }
