@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateLocationRequest extends FormRequest
 {
@@ -27,6 +28,10 @@ class UpdateLocationRequest extends FormRequest
             'name' => 'string|min:1|max:255',
             'lat' => 'numeric|between:-90.0,90.0',
             'long' => 'numeric|between:-180.0,180.0',
+            'timezone' => [
+                'string',
+                Rule::in(timezone_identifiers_list())
+            ],
         ];
     }
 }

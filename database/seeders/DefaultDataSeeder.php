@@ -20,6 +20,7 @@ class DefaultDataSeeder extends Seeder
             'name' => 'MU8-Z29',
             'lat' => '55.38080481126275',
             'long' => '10.411834955435646',
+            'timezone' => 'Europe/Copenhagen',
         ]);
 
         // Setup default devices
@@ -48,6 +49,7 @@ class DefaultDataSeeder extends Seeder
             'name' => 'Server-rum',
             'lat' => '25.000018128764673',
             'long' => '-71.00018207031547',
+            'timezone' => 'America/Araguaina',
         ]);
 
         // Setup default devices

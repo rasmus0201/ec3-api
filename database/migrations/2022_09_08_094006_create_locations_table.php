@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('timezone')->default('UTC');
             $table->decimal('lat', 17, 15);
             $table->decimal('long', 18, 15);
             $table->timestamps();

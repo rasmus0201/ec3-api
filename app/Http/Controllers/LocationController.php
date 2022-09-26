@@ -27,6 +27,7 @@ class LocationController extends Controller
     {
         $location = Location::create([
             'name' => $request->validated('name'),
+            'timezone' => $request->validated('timezone'),
             'lat' => $request->validated('lat'),
             'long' => $request->validated('long'),
         ]);
@@ -57,6 +58,10 @@ class LocationController extends Controller
 
         if ($long = $request->validated('long')) {
             $location->long = $long;
+        }
+
+        if ($timezone = $request->validated('timezone')) {
+            $location->timezone = $timezone;
         }
 
         $location->touch();
