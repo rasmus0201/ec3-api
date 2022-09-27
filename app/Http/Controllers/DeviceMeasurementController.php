@@ -92,8 +92,6 @@ class DeviceMeasurementController extends Controller
             $timestamps[$intervalTs][$dataPoint->sensor_id][] = $dataPoint->value;
         }
 
-        // dd($timestamps);
-
         $returnData = [];
         foreach ($timestamps as $intervalTs => $sensorCollections) {
             $dataPoints = [];
